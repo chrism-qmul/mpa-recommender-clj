@@ -13,7 +13,7 @@
 	{:uuid annotator_id :itemid (str doc_id ";" mention_id) :label label}))))))
 
 ;(take 5 )
-(db/mass-insert (import-csv "ta.csv"))
+(db/mass-insert! (import-csv "ta.csv"))
 
 (defn -main []
  1)
