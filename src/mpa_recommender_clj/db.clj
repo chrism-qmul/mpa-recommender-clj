@@ -1,12 +1,18 @@
 (ns mpa-recommender-clj.db
- (:require [clojure.java.jdbc :refer :all])
+ (:require [clojure.java.jdbc :refer :all]
+           [clojure.java.io :as io])
  (:gen-class))
+
+(def dbpath "db/database.db")
 
 (def db
   {:classname   "org.sqlite.JDBC"
    :subprotocol "sqlite"
-   :subname     "db/database.db"
+   :subname     dbpath
    })
+
+(defn file-exists? [path]
+  (.exists (io/as-file path)))
 
 (defn create-db
  "create db and table"
@@ -30,7 +36,7 @@
   []
   (query db ["select * from annotations"]))
 
-(take 5 (all))
-
 (defn -main []
  (create-db))
+
+(when-not (file-exists? dbpath) (create-db))
