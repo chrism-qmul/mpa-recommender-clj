@@ -5,8 +5,7 @@
         [clojure.core.async :as async]))
 
 
-(def update-channel (async/chan (async/dropping-buffer 1)))
-
+(def latest-model (atom {:model nil :outdated true}))
 
 (defrecord Annotation [annotator item_id label]) ;context(label)
 
@@ -44,9 +43,7 @@
 
 (defn log-annotation [annotation]
   (db/insert! annotation)
-  (async/put! update-channel 1))
-
-;(aggregate-doc-scores (item-scores-for-annotator "5395fc8b1cc10b8840f7502f0798a1420bf928a7de93931b02024e0064811d57" (mpa (load-db-data))))
+  (swap! latest-model assoc :outdated true))
 
 (defn item-scores-for-annotator [annotator mpa-model]
  (let [item-names (get-item-names mpa-model)
@@ -59,26 +56,37 @@
 	     (let [docid (itemname->docid itemid)]
 	      (update m docid (fnil aggregate 0) score))) {} item-scores))
 
-(defn best-recommendation-for-user [uuid]
-  (->> (load-db-data)
-       (mpa)
+(defn seen-documents-for-annotator [uuid]
+  (->> uuid
+    (db/seen-items-for-annotator)
+    (map itemname->docid)
+    (set)))
+
+(defn best-recommendation-for-annotator [uuid model]
+  (->> model
        (item-scores-for-annotator uuid)
        (aggregate-doc-scores)
        (sort-by val >)
-       (first)
-       (key)))
+       (map key)
+       (remove (seen-documents-for-annotator uuid))
+       (first)))
 
-(defn updater 
-  "keeps an up to date model as changes come in"
-  []
-  (let [model-channel (async/chan (async/sliding-buffer 1))]
-    (async/thread
-      (async/go-loop []
-               (async/<! update-channel)
-               (!> model-channel (mpa (load-db-data)))
-               (recur)))
-    (async/go-loop []
-                   (!> model-channel @latest-model)
-                   (recur))
-    (async/put! update-channel 1)
-    model-channel))
+;(seen-documents-for-annotator (first (db/annotators)))
+;(def model (mpa (load-db-data)))
+;(best-recommendation-for-user (first (db/annotators)) model)
+
+;(defn updater 
+;  "keeps an up to date model as changes come in"
+;  []
+;  (let [latest-model (async/chan (async/sliding-buffer 1))
+;        update-channel (async/chan (async/dropping-buffer 1))
+;        output-channel (async/chan 1)]
+;    (async/thread
+;      (async/go-loop []
+;               (when-not (nil? @latest-model) (async/<! update-channel))
+;               (async/>! latest-model (mpa (load-db-data)))
+;               (recur)))
+;    (async/go-loop []
+;                   (async/>! update-channel @latest-model)
+;                   (recur))
+;    model-channel))

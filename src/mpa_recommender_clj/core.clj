@@ -4,26 +4,45 @@
             [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.adapter.jetty :as jetty]
-            [clojure.core.async :as async])
+            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
+            [ring.util.response :refer [response]]
+            [clojure.core.async :refer [thread go-loop <! dropping-buffer chan put!]])
   (:gen-class))
 
-;(defroutes app
-;  (GET "/task/:uuid" [uuid]
-;       )
-;  (POST "/task" request
-;       (comment (recommender/log-annotation 1))
-;       ""))
+(def update-required-channel (chan (dropping-buffer 1)))
+
+(def latest-model (atom nil))
 
 (defn build-mpa-model
   "build a new MPA model from the latest data"
   []
   (recommender/mpa (recommender/load-db-data)))
 
-(thread (build-mpa-model))
+(defn model-updater []
+  (go-loop []
+           (when-not (nil? @latest-model) (<! update-required-channel))
+           (reset! latest-model (<! (thread (build-mpa-model))))
+           (recur)))
 
-(defn run-webserver []
-  (jetty/run-jetty app {:port (env :http-port)
-                            :join? false}))
+(defroutes app
+  (GET "/" req "task recommender")
+  (GET "/task/:uuid" [uuid]
+       (response (recommender/best-recommendation-for-annotator uuid @latest-model)))
+  (POST "/task" {:keys [body]}
+        ;uuid itemid label
+       (put! update-required-channel 1)
+       (recommender/log-annotation body)
+       (response {:successfull true})))
+
+
+(defn run-webserver [join?]
+  (let [app-middleware (-> app
+                           (wrap-json-body {:keywords? true})
+                           (wrap-json-response))]
+    (jetty/run-jetty app-middleware {:port (Integer/parseInt (env :http-port))
+                                     :join? join?})))
+
 
 (defn -main []
-  0)
+  (model-updater)
+  (run-webserver true))

@@ -9,6 +9,7 @@
                  [org.xerial/sqlite-jdbc "3.36.0.1"]
                  [org.clojure/data.csv "1.0.0"]
                  [ring/ring-core "1.8.2"]
+                 [ring/ring-json "0.5.1"]
                  [ring/ring-jetty-adapter "1.8.2"]
                  [compojure "1.6.2"]
                  [environ "1.2.0"]]

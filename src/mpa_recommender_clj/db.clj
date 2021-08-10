@@ -60,6 +60,14 @@
   []
   (jdbc/query db ["select * from annotations"]))
 
+(defn seen-items-for-annotator
+  "seen items for annotator"
+  [uuid]
+  (map :itemid (jdbc/query db ["select itemid from annotations where uuid = ?" uuid])))
+
+(defn annotators []
+  (map :uuid (jdbc/query db ["select DISTINCT(uuid) as uuid from annotations"])))
+
 (defn -main []
  (create-db))
 
