@@ -20,9 +20,7 @@
 (def dbpath (env :database-path))
 
 (def db
-  {:classname   "org.sqlite.JDBC"
-   :subprotocol "sqlite"
-   :subname     dbpath})
+  {:connection-uri (str "jdbc:sqlite:" dbpath)})
 
 (defn file-exists? 
   "check if file at path exists"
@@ -32,6 +30,7 @@
 (defn create-db
  "create db and table"
  []
+ (when-not (file-exists? dbpath)
  (try 
   (jdbc/db-do-commands db
    (jdbc/create-table-ddl :annotations
@@ -40,7 +39,7 @@
     [:timestamp :datetime :default :current_timestamp]
     [:label :text]]))
   (catch Exception e
-   (println (.getMessage e)))))
+   (println (.getMessage e))))))
 
 (defn mass-insert! 
   "fast insert multiple annotation records to the database"
@@ -70,6 +69,3 @@
 
 (defn -main []
  (create-db))
-
-; if the database doesn't exist on startup, create it
-(when-not (file-exists? dbpath) (create-db))

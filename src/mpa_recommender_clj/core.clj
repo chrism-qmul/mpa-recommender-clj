@@ -1,5 +1,6 @@
 (ns mpa-recommender-clj.core
   (:require [mpa-recommender-clj.recommender :as recommender]
+            [mpa-recommender-clj.db :as db]
             [environ.core :refer [env]]
             [compojure.core :refer :all]
             [compojure.route :as route]
@@ -25,14 +26,15 @@
            (recur)))
 
 (defroutes app
-  (GET "/" req "task recommender")
+  (GET "/" req (response "task recommender"))
   (GET "/task/:uuid" [uuid]
        (response (recommender/best-recommendation-for-annotator uuid @latest-model)))
   (POST "/task" {:keys [body]}
         ;uuid itemid label
        (put! update-required-channel 1)
        (recommender/log-annotation body)
-       (response {:successfull true})))
+       (response {:successfull true}))
+  (route/not-found "not found"))
 
 
 (defn run-webserver [join?]
@@ -42,7 +44,13 @@
     (jetty/run-jetty app-middleware {:port (Integer/parseInt (env :http-port))
                                      :join? join?})))
 
+(defn check-env []
+  (and (some? (env :http-port)) (some? (env :database-path))))
 
-(defn -main []
-  (model-updater)
-  (run-webserver true))
+(defn -main [& args]
+  (if (check-env)
+    (do
+      (db/create-db)
+      (model-updater)
+      (run-webserver true))
+    (prn "Missing config DATABASE_PATH or HTTP_PORT")))

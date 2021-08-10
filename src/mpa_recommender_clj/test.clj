@@ -16,12 +16,5 @@
                   ["doc_b" "item_d" "alice" "F(1;1)"]
                   ["doc_b" "item_e" "bob" "F(1;1)"]])
 
-(def sample (mapv (fn [[doc_id item annotator label]] (recommender/->Annotation annotator doc_id item label)) sample-annotations))
-
-(->> sample
-(recommender/mpa)
-(recommender/item-scores-for-annotator "bob")
-(recommender/aggregate-doc-scores)
-(sort-by val >)
-(first)
-(key))
+(defn sample [] 
+  (mapv (fn [[doc_id item annotator label]] (recommender/->Annotation annotator doc_id item label)) sample-annotations))
