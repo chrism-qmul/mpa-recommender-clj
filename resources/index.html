@@ -1,0 +1,20 @@
+<!doctype>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <title></title>
+  </head>
+  <body>
+    <div class='container'>
+      <h1>Task Recommender</h1>
+      <h2>Request Document</h2>
+      <code>
+        curl -X GET https://mpa-recommender.tileattack.com/task/UUID-UUID-UUID-UUID
+      </code>
+      <h2>Send completed task</h2>
+      <code>
+        curl -X POST https://mpa-recommender.tileattack.com/task -H "Content-Type: application/json" -d '{"uuid":"UUID-UUID-UUID-UUID", "itemid":"docid;itemid", "label":"context(label)"}'
+      </code>
+    </div>
+  </body>
+</html>

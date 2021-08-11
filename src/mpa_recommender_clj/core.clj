@@ -2,6 +2,7 @@
   (:require [mpa-recommender-clj.recommender :as recommender]
             [mpa-recommender-clj.db :as db]
             [environ.core :refer [env]]
+            [clojure.java.io :as io]
             [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.adapter.jetty :as jetty]
@@ -11,6 +12,8 @@
   (:gen-class))
 
 (def update-required-channel (chan (dropping-buffer 1)))
+
+
 
 (def latest-model (atom nil))
 
@@ -26,7 +29,7 @@
            (recur)))
 
 (defroutes app
-  (GET "/" req (response "task recommender"))
+  (GET "/" req (slurp (io/resource "index.html")))
   (GET "/task/:uuid" [uuid]
        (response (recommender/best-recommendation-for-annotator uuid @latest-model)))
   (POST "/task" {:keys [body]}
