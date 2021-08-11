@@ -1,0 +1,14 @@
+version: '2' 
+
+services:
+  server:
+    build: .
+    restart: unless-stopped
+    image: registry.phd.madg.es/mpa-recommender-clj:0.0.1
+    volumes:
+      - ./db:/db/
+    environment:
+      DATABASE_PATH: "db/database.db"
+      HTTP_PORT: 5000
+    ports:
+      - 5000:5000

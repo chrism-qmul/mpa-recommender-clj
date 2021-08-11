@@ -1,22 +1,21 @@
-# mpa-recommender-clj
+# MPA Recommender
 
-A Clojure library designed to ... well, that part is up to you.
+Makes document recommendations based on Mutual Information
 
-## Usage
+## Building
 
-FIXME
+```
+# build MPA
+cd MPA
+./build.sh
+cd -
+# build the uberjar with dependencies (including MPA)
+lein uberjar
+```
 
-## License
+## Running
 
-Copyright © 2021 FIXME
-
-This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
-
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+```
+DATABASE_PATH=db/database.db HTTP_PORT=5000 va -jar
+target/mpa-recommender-clj-0.1.0-SNAPSHOT-standalone.jar
+```
