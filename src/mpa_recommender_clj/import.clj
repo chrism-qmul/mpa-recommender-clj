@@ -9,8 +9,9 @@
  (with-open [reader (io/reader csv-file-path)]
   (doall (->> (csv/read-csv reader)
    (rest)
-   (map (fn [[_ mention_id doc_id _ annotator_id _ label]]
-	{:uuid annotator_id :itemid (str doc_id ";" mention_id) :label label}))))))
+   (map (fn [[_ mention_id doc_id _ annotator_id _ label reading-level]]
+	{:uuid annotator_id :itemid (str doc_id ";" mention_id) :label label :reading-level reading-level}))))))
+
 
 (defn csv-data->map [csv-data]
   (map zipmap (->> (first csv-data)
@@ -22,8 +23,9 @@
   (csv-data->map (-> csv-file-path (io/reader) (csv/read-csv))))
 
 ;(db/mass-insert! (import-csv-basic "ta_mpa.csv"))
-;(take 5 )
 ;(db/mass-insert! (import-csv "ta.csv"))
 
-;(defn -main []
-; 1)
+(comment 
+  (do
+    (db/create-db)
+    (db/mass-insert! (map db/coerce-annotation (import-csv-basic "ta_mpa.2022-03-25.csv")))))

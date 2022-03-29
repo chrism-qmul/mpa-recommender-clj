@@ -236,20 +236,36 @@ public class Model {
 	    return results;
 	}
 
-	public double[] calculateMutualInformationForAnnotator(String annotator) {
-		if (!annotatorsIndexMap.containsKey(annotator)) {
-			return null;
+	public double averageAlpha(int k) {
+		double a = 0.0;
+		for(int j = 0; j < J; j++) {
+			a += alpha[j][k];
 		}
-		int j = annotatorsIndexMap.get(annotator);
+		return a/J;
+	}
+
+	public double[] calculateMutualInformationForAnnotator(String annotator) {
+		Integer j = null;
+		if (annotatorsIndexMap.containsKey(annotator)) {
+			j = annotatorsIndexMap.get(annotator);
+		}
 		//label space - contexts, then labels
 		double[] mutual_information = new double[I];
 		double[][] p_y_eq_kprime_given_ci_eq_k = new double[K][K];
 		for(int k = 0; k < K; k++) {
 			for(int kprime = 0; kprime < K; kprime++) {
 				if (kprime != k) {
-					p_y_eq_kprime_given_ci_eq_k[kprime][k] = ((1 - alpha[j][k])) / (K - 1);
+					if (j != null) {
+						p_y_eq_kprime_given_ci_eq_k[kprime][k] = ((1 - alpha[j][k])) / (K - 1);
+					} else {
+						p_y_eq_kprime_given_ci_eq_k[kprime][k] = averageAlpha(k);
+					}
 				} else {
-					p_y_eq_kprime_given_ci_eq_k[kprime][k] = alpha[j][k];
+					if (j != null) {
+						p_y_eq_kprime_given_ci_eq_k[kprime][k] = alpha[j][k];
+					} else {
+						p_y_eq_kprime_given_ci_eq_k[kprime][k] = averageAlpha(k);
+					}
 				}
 			}
 		}

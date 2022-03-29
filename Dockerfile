@@ -1,7 +1,7 @@
 FROM maven:3.8.1-openjdk-11 as mpabuild
 COPY MPA/* ./
 RUN mvn package
-RUN mkdir maven && mvn deploy:deploy-file -Dfile=target/mpa-recommender-1.1.jar -DartifactId=mpa-recommender -Dversion=1.1.0 -DgroupId=MPA -Dpackaging=jar -Durl=file:./maven
+RUN mkdir maven && mvn deploy:deploy-file -Dfile=target/mpa-recommender-1.2.jar -DartifactId=mpa-recommender -Dversion=1.2 -DgroupId=MPA -Dpackaging=jar -Durl=file:./maven
 
 FROM clojure:openjdk-11-lein as cljbuild
 WORKDIR /usr/src/app

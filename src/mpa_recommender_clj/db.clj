@@ -2,14 +2,19 @@
  (:require [clojure.java.jdbc :as jdbc]
            [clojure.java.io :as io]
            [clojure.spec.alpha :as s]
+           [spec-tools.core :as st]
            [environ.core :refer [env]])
  (:gen-class))
 
 (s/def ::uuid string?)
+(s/def ::reading_level int?)
 (s/def ::itemid (s/and string? #(re-matches #".*;.*" %)))
 (s/def ::label (s/and string? #(re-matches #".*?\(.*?\)" %)))
 
-(s/def ::annotation (s/keys :req-un [::uuid ::itemid ::label]))
+(s/def ::annotation (s/keys :req-un [::uuid ::itemid ::reading_level ::label]))
+
+(defn coerce-annotation [annotation]
+  (st/coerce ::annotation annotation  st/string-transformer))
 
 (defn valid-annotation? [annotation]
   (s/valid? ::annotation annotation))
@@ -33,11 +38,16 @@
  (when-not (file-exists? dbpath)
  (try 
   (jdbc/db-do-commands db
-   (jdbc/create-table-ddl :annotations
+   [(jdbc/create-table-ddl :annotations
     [[:uuid :text]
+    [:collection :text]
     [:itemid :text]
+    [:reading_level :int]
     [:timestamp :datetime :default :current_timestamp]
-    [:label :text]]))
+    [:label :text]])
+   "CREATE INDEX annotations_uuid ON annotations(uuid)"
+   "CREATE INDEX annotations_collection ON annotations(collection)"
+   "CREATE INDEX annotations_itemid ON annotations(itemid)"])
   (catch Exception e
    (println (.getMessage e))))))
 
@@ -54,15 +64,36 @@
   {:pre [(valid-annotation? record)]}
   (jdbc/insert! db :annotations record))
 
+(defn items-for-collection
+  "all the items in a collection"
+  [collection]
+  (map :itemid (jdbc/query db ["select itemid from annotations where collection = ?" collection])))
+
 (defn all
   "get all annotation records"
   []
   (jdbc/query db ["select * from annotations"]))
 
+(defn with-reading-level
+  "get all annotation records with reading level"
+  []
+  (jdbc/query db ["select * from annotations where reading_level > 0"]))
+
 (defn seen-items-for-annotator
   "seen items for annotator"
   [uuid]
   (map :itemid (jdbc/query db ["select itemid from annotations where uuid = ?" uuid])))
+
+(defn annotations-for-user
+  "seen items for annotator"
+  [uuid]
+  (jdbc/query db ["select * from annotations where uuid = ?" uuid]))
+
+(defn annotations-for-user-with-reading-level
+  "seen items for annotator"
+  [uuid]
+  (jdbc/query db ["select * from annotations where uuid = ? AND reading_level > 0" uuid]))
+
 
 (defn annotators []
   (map :uuid (jdbc/query db ["select DISTINCT(uuid) as uuid from annotations"])))

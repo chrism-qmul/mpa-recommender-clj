@@ -16,6 +16,6 @@ lein uberjar
 ## Running
 
 ```
-DATABASE_PATH=db/database.db HTTP_PORT=5000 va -jar
+DATABASE_PATH=db/database.db HTTP_PORT=5000 java -jar
 target/mpa-recommender-clj-0.1.0-SNAPSHOT-standalone.jar
 ```
