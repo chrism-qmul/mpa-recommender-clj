@@ -31,8 +31,7 @@
        (aggregate-doc-scores)
        (sort-by val >)
        (map key)
-       (remove (seen-documents-for-annotator uuid))
-       (first)))
+       (remove (seen-documents-for-annotator uuid))))
 
 ;(seen-documents-for-annotator (first (db/annotators)))
 ;(def model (mpa (load-db-data)))

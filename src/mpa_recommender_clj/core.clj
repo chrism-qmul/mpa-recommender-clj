@@ -24,7 +24,8 @@
 (defroutes app
   (GET "/" req (slurp (io/resource "index.html")))
   (GET "/task/:uuid" [uuid]
-       (response (first (information/highest-information-for-annotator uuid (:mpa @latest-model)))))
+       ;(response (first (information/highest-information-for-annotator uuid (:mpa @latest-model)))))
+       (response (first (recommender/best-document uuid (:mpa @latest-model)))))
   (POST "/task" {:keys [body]}
         ;uuid itemid label
        (put! update-required-channel 1)

@@ -4,7 +4,7 @@ services:
   server:
     build: .
     restart: unless-stopped
-    image: registry.phd.madg.es/mpa-recommender-clj:0.0.2
+    image: registry.phd.madg.es/mpa-recommender-clj:0.1.0
     volumes:
       - ./db:/db/
     environment:

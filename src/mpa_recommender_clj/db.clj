@@ -79,6 +79,11 @@
   []
   (jdbc/query db ["select * from annotations where reading_level > 0"]))
 
+(defn top-annotators-at-level
+  "get top contributing annotators at level"
+  [reading_level limit]
+  (jdbc/query db ["select * from (select count() as annotation_count, uuid from annotations where reading_level = ? GROUP BY uuid) order by annotation_count desc LIMIT ?" reading_level limit]))
+
 (defn seen-items-for-annotator
   "seen items for annotator"
   [uuid]
@@ -94,7 +99,14 @@
   [uuid]
   (jdbc/query db ["select * from annotations where uuid = ? AND reading_level > 0" uuid]))
 
+(defn reading-level-for-items []
+  (let [sql "select substr(itemid,0,65) as document, reading_level from annotations group by document"
+        results (jdbc/query db [sql])]
+    (reduce (fn [acc {:keys [document reading_level]}] 
+              (assoc acc document reading_level)) {} results)))
 
+(defn annotators []
+  (map :uuid (jdbc/query db ["select DISTINCT(uuid) as uuid from annotations"])))
 (defn annotators []
   (map :uuid (jdbc/query db ["select DISTINCT(uuid) as uuid from annotations"])))
 

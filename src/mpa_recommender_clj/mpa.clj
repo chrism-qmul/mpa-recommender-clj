@@ -5,7 +5,7 @@
 (defn annotation->mpa [{:keys [itemid uuid label]}]
   (into-array [itemid uuid label]))
 
-(defn- get-silver [mpa-model]
+(defn get-silver [mpa-model]
   (->> mpa-model
     (.getResults)
     (into {})))

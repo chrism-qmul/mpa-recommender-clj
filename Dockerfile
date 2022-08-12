@@ -7,6 +7,7 @@ FROM clojure:openjdk-11-lein as cljbuild
 WORKDIR /usr/src/app
 COPY . ./
 COPY --from=mpabuild /maven ./
+RUN npm install -g less
 RUN lein uberjar
 RUN lein deps && mv "$(lein uberjar | sed -n 's/^Created \(.*standalone\.jar\)/\1/p')" app-standalone.jar
 
